@@ -46,10 +46,10 @@ class OlxSubscriptionController extends Controller
         $email = $request->input('email');
 
         // Перевіряємо, чи існує така URL
-        $existingLink = OlxLink::where('url', $url)->first();
-        if ($existingLink) {
+        $link = OlxLink::where('url', $url)->first();
+        if ($link) {
             // Перевіряємо, чи є передплатник з цим email на цей URL
-            $existingSubscriber = OlxSubscriber::where('olx_link_id', $existingLink->id)
+            $existingSubscriber = OlxSubscriber::where('olx_link_id', $link->id)
                 ->where('email', $email)
                 ->first();
 
@@ -59,7 +59,7 @@ class OlxSubscriptionController extends Controller
                 ])->withInput();
             }
         }
-        if(!$existingLink) {
+        if(!$link) {
             // Отримуємо ID із URL
             $olxId = $this->olxService->getOfferIdFromUrl($url);
             if (!$olxId) {
@@ -81,28 +81,23 @@ class OlxSubscriptionController extends Controller
                 ['olx_id' => $olxId],
                 ['url' => $url, 'is_price_update' => 0]
             );
-        }else {
-            $olxId = $existingLink->olx_id;
+             
+              // Зберігаємо ціну
+            OlxPrice::create([
+                'olx_link_id' => $link->id,
+                'price' => $priceInfo['price'],
+                'currency' => $priceInfo['currency']
+            ]);
         }
-        
 
         // Створюємо передплатника
         $token = Str::uuid();
-        OlxSubscriber::create([
+        $subscriber = OlxSubscriber::create([
             'olx_link_id' => $link->id,
             'email' => $email,
             'confirmation_token' => $token
         ]);
-
-        // Зберігаємо ціну
-        OlxPrice::create([
-            'olx_link_id' => $link->id,
-            'price' => $priceInfo['price'],
-            'currency' => $priceInfo['currency']
-        ]);
-
         // Надсилаємо лист підтвердження
-        $subscriber = DB::table('olx_subscribers')->where('id', $subscriberId)->first();
         Mail::to($email)->send(new OlxConfirmEmail($subscriber));
 
         return back()->with('success', 'Проверьте вашу почту и подтвердите подписку.');
