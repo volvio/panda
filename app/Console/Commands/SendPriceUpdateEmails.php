@@ -65,7 +65,6 @@ class SendPriceUpdateEmails extends Command
                 Mail::to($subscriber->email)->send(
                     new OlxPriceUpdatedMail($link, $latestPrice)
                 );
-
                 $this->info("Лист відправлений: {$subscriber->email} ({$link->url})");
             }
 

@@ -76,7 +76,6 @@ class CheckOlxPrices extends Command
 
                     $this->info("Ціна змінилася. Нова: {$newPrice} {$newCurrency}");
                 } else {
-
                     $this->info("Ціна не змінилася: {$lastPrice->price} {$lastPrice->currency}");
                 }
             } catch (\Throwable $e) {
@@ -84,7 +83,6 @@ class CheckOlxPrices extends Command
                 $this->error("Помилка: {$e->getMessage()}");
             }
         }
-
         $this->info('Перевірку завершено.');
     }
 }
