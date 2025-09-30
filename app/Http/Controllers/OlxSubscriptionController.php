@@ -77,10 +77,11 @@ class OlxSubscriptionController extends Controller
             }
             
             // Зберігаємо або беремо існуючу URL
-            $link = OlxLink::firstOrCreate(
-                ['olx_id' => $olxId],
-                ['url' => $url, 'is_price_update' => 0]
-            );
+            $link = OlxLink::create([
+                    'olx_id' => $olxId,
+                    'url' => $url, 
+                    'is_price_update' => 0
+                ]);
              
               // Зберігаємо ціну
             OlxPrice::create([
@@ -108,9 +109,8 @@ class OlxSubscriptionController extends Controller
      */
     public function confirm($token)
     {
-        $subscriber = OlxSubscriber::where('token', $token)->firstOrFail();
+        $subscriber = OlxSubscriber::where('confirmation_token', $token)->firstOrFail();
         $subscriber->confirmed_at = Carbon::now();
-        $subscriber->confirmation_token = null;
         $subscriber->save();
 
         return view('olx.confirmed');
